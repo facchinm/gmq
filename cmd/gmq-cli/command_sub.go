@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
-	"os"
+	"fmt"
 
+	"github.com/ugorji/go/codec"
 	"github.com/yosssi/gmq/mqtt"
 	"github.com/yosssi/gmq/mqtt/client"
 )
@@ -55,6 +56,19 @@ func newCommandSub(args []string, cli *client.Client) (command, error) {
 }
 
 func messageHandler(topicName, message []byte) {
-	os.Stdout.WriteString("\n[Topic Name]\n" + string(topicName) + "\n[Application Message]\n" + string(message) + "\n")
+	//os.Stdout.WriteString("\n[Topic Name]\n" + string(topicName) + "\n[Application Message]\n" + string(message) + "\n")
+	// try to decode cbor stuff
+	var vd interface{}
+	var ch codec.CborHandle
+	dec := codec.NewDecoderBytes(message, &ch)
+	err := dec.Decode(&vd)
+
+	if err != nil {
+		fmt.Printf("Error Unmarshal %s", err)
+		return
+	}
+
+	fmt.Printf("%v", vd)
+
 	printHeader()
 }
